@@ -222,12 +222,13 @@ function ide:RemoveDocument(ed)
   if not self:IsValidCtrl(ed) or not self.openDocuments[ed:GetId()] then return false end
 
   local index, notebook = self:GetDocument(ed):GetTabIndex()
+  local cureditor = notebook:GetCurrentPage() -- save the currently active page
   if not notebook:RemovePage(index) then return false end
 
   self.openDocuments[ed:GetId()] = nil
 
-  local editor = notebook:GetCurrentPage()
-  if editor then ide:GetDocument(editor):SetActive() end
+  local doc = cureditor and ide:GetDocument(cureditor)
+  if doc then doc:SetActive() end
 
   return true
 end
