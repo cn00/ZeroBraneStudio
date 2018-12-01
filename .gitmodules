@@ -1,0 +1,24 @@
+[submodule "wxlua"]
+	path = wxlua
+	url = https://github.com/pkulchenko/wxlua.git
+[submodule "wxWidgets"]
+	path = wxWidgets
+	url = https://github.com/pkulchenko/wxWidgets.git
+[submodule "luasocket"]
+	path = luasocket
+	url = https://github.com/diegonehab/luasocket.git
+[submodule "luasec"]
+	path = luasec
+	url = https://github.com/brunoos/luasec.git
+[submodule "lfs"]
+	path = lfs
+	url = https://github.com/keplerproject/luafilesystem.git
+[submodule "lpeg"]
+	path = lpeg
+	url = https://github.com/LuaDist/lpeg.git
+[submodule "scintillua"]
+	path = scintillua
+	url = https://github.com/rgieseke/scintillua.git
+[submodule "lua"]
+	path = lua
+	url = git@github.com:cn00/lua.git

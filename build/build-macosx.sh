@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -x
 # exit if the command line is empty
 if [ $# -eq 0 ]; then
   echo "Usage: $0 LIBRARY..."
@@ -13,12 +14,12 @@ BIN_DIR="$(dirname "$PWD")/bin"
 INSTALL_DIR="$PWD/deps"
 
 # Mac OS X global settings
-MACOSX_ARCH="i386"
-MACOSX_VERSION="10.6"
-MACOSX_SDK_PATH="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk"
+MACOSX_ARCH="x86_64"
+MACOSX_VERSION="10.14"
+MACOSX_SDK_PATH="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
 
 # number of parallel jobs used for building
-MAKEFLAGS="-j4"
+MAKEFLAGS="-j16"
 
 # flags for manual building with gcc; build universal binaries for luasocket
 MACOSX_FLAGS="-arch $MACOSX_ARCH -mmacosx-version-min=$MACOSX_VERSION"
@@ -26,34 +27,63 @@ if [ -d "$MACOSX_SDK_PATH" ]; then
   echo "Building with $MACOSX_SDK_PATH"
   MACOSX_FLAGS="$MACOSX_FLAGS -isysroot $MACOSX_SDK_PATH"
 fi
-BUILD_FLAGS="-O2 -arch x86_64 -dynamiclib -undefined dynamic_lookup $MACOSX_FLAGS -I $INSTALL_DIR/include -L $INSTALL_DIR/lib"
+BUILD_FLAGS="-O2 -std=c++11 -stdlib=libc++ -arch x86_64 -dynamiclib -undefined dynamic_lookup $MACOSX_FLAGS -I $INSTALL_DIR/include -L $INSTALL_DIR/lib"
 
 # paths configuration
 WXWIDGETS_BASENAME="wxWidgets"
 WXWIDGETS_URL="https://github.com/pkulchenko/wxWidgets.git"
+# git submodule add "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME"
+# pushd "$WXWIDGETS_BASENAME" && git submodule update && popd
 
 WXLUA_BASENAME="wxlua"
 WXLUA_URL="https://github.com/pkulchenko/wxlua.git"
+# git submodule add "$WXLUA_URL" "$WXLUA_BASENAME"
+# pushd "$WXLUA_BASENAME" && git submodule update && popd
 
 LUASOCKET_BASENAME="luasocket-3.0-rc1"
+LUASOCKET_BASENAME="luasocket"
 LUASOCKET_FILENAME="v3.0-rc1.zip"
-LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
+LUASOCKET_VERSION="v3.0-rc1"
+# LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
+LUASOCKET_URL="https://github.com/diegonehab/luasocket.git"
+# git submodule add "$LUASOCKET_URL" "$LUASOCKET_BASENAME"
+# pushd "$LUASOCKET_BASENAME" && git checkout "$LUASOCKET_VERSION" -b "$LUASOCKET_VERSION" && git submodule update && popd
 
 LUASEC_BASENAME="luasec-0.6"
+LUASEC_BASENAME="luasec"
+LUASEC_VERSION="luasec-0.6"
 LUASEC_FILENAME="$LUASEC_BASENAME.zip"
 LUASEC_URL="https://github.com/brunoos/luasec/archive/$LUASEC_FILENAME"
+LUASEC_URL="https://github.com/brunoos/luasec.git"
+# git submodule add "$LUASEC_URL" "$LUASEC_BASENAME"
+# pushd "$LUASEC_BASENAME"  && git checkout "$LUASEC_VERSION" -b "$LUASEC_VERSION" && git submodule update && popd
 
 LFS_BASENAME="v_1_6_3"
 LFS_FILENAME="$LFS_BASENAME.tar.gz"
 LFS_URL="https://github.com/keplerproject/luafilesystem/archive/$LFS_FILENAME"
+LFS_BASENAME="lfs"
+LFS_VERSION="v_1_6_3"
+LFS_FILENAME="$LFS_BASENAME-$LFS_VERSION.tar.gz"
+LFS_URL="https://github.com/keplerproject/luafilesystem.git"
+# git submodule add "$LFS_URL" "$LFS_BASENAME"
+# pushd "$LFS_BASENAME" && git checkout "$LFS_VERSION" -b "$LFS_VERSION" && git submodule update && popd
 
 LPEG_BASENAME="lpeg-1.0.0"
+LPEG_BASENAME="lpeg"
+LPEG_VERSION="1.0.0"
 LPEG_FILENAME="$LPEG_BASENAME.tar.gz"
 LPEG_URL="http://www.inf.puc-rio.br/~roberto/lpeg/$LPEG_FILENAME"
+LPEG_URL="https://github.com/LuaDist/lpeg.git"
+# git submodule add "$LPEG_URL" "$LPEG_BASENAME"
+# pushd "$LPEG_BASENAME" && git checkout "$LPEG_VERSION" -b "$LPEG_VERSION" && git submodule update && popd
 
-LEXLPEG_BASENAME="scintillua_3.6.5-1"
+LEXLPEG_BASENAME="scintillua"
+LEXLPEG_VERSION="scintillua_3.6.5-1"
 LEXLPEG_FILENAME="$LEXLPEG_BASENAME.zip"
 LEXLPEG_URL="https://foicica.com/scintillua/download/$LEXLPEG_FILENAME"
+LEXLPEG_URL="https://github.com/rgieseke/scintillua.git"
+# git submodule add "$LEXLPEG_URL" "$LEXLPEG_BASENAME"
+# pushd "$LEXLPEG_BASENAME" && git checkout "$LEXLPEG_VERSION" -b "$LEXLPEG_VERSION" && git submodule update && popd
 
 WXWIDGETSDEBUG="--disable-debug"
 WXLUABUILD="MinSizeRel"
@@ -150,49 +180,56 @@ mkdir -p "$INSTALL_DIR" || { echo "Error: cannot create directory $INSTALL_DIR";
 
 LUAV="51"
 LUAS=""
-LUA_BASENAME="lua-5.1.5"
+
+LUA_BASENAME="lua"
+LUA_FILENAME="$LUA_BASENAME.tar.gz"
+LUA_VERSION="v5-3-4"
+LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
+LUA_URL="https://github.com/cn00/lua.git"
 
 if [ $BUILD_52 ]; then
   LUAV="52"
   LUAS=$LUAV
-  LUA_BASENAME="lua-5.2.4"
+  LUA_VERSION="5.2.3"
 fi
-
-LUA_FILENAME="$LUA_BASENAME.tar.gz"
-LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
 
 if [ $BUILD_53 ]; then
   LUAV="53"
   LUAS=$LUAV
-  LUA_BASENAME="lua-5.3.1"
+  LUA_VERSION="5.3.5"
   LUA_FILENAME="$LUA_BASENAME.tar.gz"
-  LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
 fi
 
 if [ $BUILD_54 ]; then
   LUAV="54"
   LUAS=$LUAV
-  LUA_BASENAME="lua-5.4.0-work1"
+  LUA_VERSION="5.4.0"
   LUA_FILENAME="$LUA_BASENAME.tar.gz"
-  LUA_URL="http://www.lua.org/work/$LUA_FILENAME"
   LUA_COMPAT="MYCFLAGS=-DLUA_COMPAT_MODULE"
 fi
+# git submodule add "$LUA_URL" "$LUA_BASENAME"
+# pushd "$LUA_BASENAME" && git checkout "$LUA_VERSION" -b "$LUA_VERSION" && git submodule update && popd
 
 if [ $BUILD_JIT ]; then
   LUA_BASENAME="luajit"
   LUA_URL="https://github.com/pkulchenko/luajit.git"
 fi
 
+git submodule update --recursive --force
+
 # build Lua
 if [ $BUILD_LUA ]; then
   if [ $BUILD_JIT ]; then
-    git clone "$LUA_URL" "$LUA_BASENAME"
+    # git submodule add "$LUA_URL" "$LUA_BASENAME"
     (cd "$LUA_BASENAME"; git checkout v2.0.4)
   else
-    curl -L "$LUA_URL" > "$LUA_FILENAME" || { echo "Error: failed to download Lua"; exit 1; }
-    tar -xzf "$LUA_FILENAME"
+    echo "$BUILD_LUA $BUILD_JIT"
+    # [ -f $LUA_FILENAME ] || curl -L "$LUA_URL" > "$LUA_FILENAME" || { echo "Error: failed to download Lua"; exit 1; }
+    # tar -xzf "$LUA_FILENAME"
+
   fi
   cd "$LUA_BASENAME"
+  git checkout .
 
   if [ $BUILD_JIT ]; then
     make BUILDMODE=dynamic LUAJIT_SO=liblua.dylib TARGET_DYLIBPATH=liblua.dylib CC="gcc -m32" CCOPT="$MACOSX_FLAGS -DLUAJIT_ENABLE_LUA52COMPAT" || { echo "Error: failed to build Lua"; exit 1; }
@@ -215,15 +252,15 @@ if [ $BUILD_LUA ]; then
   [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/bin/lua$LUAS"
   [ -f "$INSTALL_DIR/lib/liblua$LUAS.dylib" ] || { echo "Error: liblua$LUAS.dylib isn't found"; exit 1; }
   cd ..
-  rm -rf "$LUA_FILENAME" "$LUA_BASENAME"
+  # rm -rf "$LUA_FILENAME" "$LUA_BASENAME"
 fi
 
 # build lexlpeg
 if [ $BUILD_LEXLPEG ]; then
   # need wxwidgets/Scintilla and lua files
-  git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
-  curl -L "$LEXLPEG_URL" > "$LEXLPEG_FILENAME" || { echo "Error: failed to download LexLPeg"; exit 1; }
-  unzip "$LEXLPEG_FILENAME"
+  # git submodule add "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
+  # curl -L "$LEXLPEG_URL" > "$LEXLPEG_FILENAME" || { echo "Error: failed to download LexLPeg"; exit 1; }
+  # unzip "$LEXLPEG_FILENAME"
   cd "$LEXLPEG_BASENAME"
 
   # comment out loading lpeg as it's causing issues with _luaopen_lpeg symbol
@@ -240,33 +277,34 @@ if [ $BUILD_LEXLPEG ]; then
   [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.dylib"
 
   cd ..
-  rm -rf "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
+  # rm -rf "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
   # don't delete wxwidgets, if it's requested to be built
-  [ $BUILD_WXWIDGETS ] || rm -rf "$WXWIDGETS_BASENAME"
+  # [ $BUILD_WXWIDGETS ] || rm -rf "$WXWIDGETS_BASENAME"
 fi
 
 # build wxWidgets
 if [ $BUILD_WXWIDGETS ]; then
   # don't clone again, as it's already cloned for lexlpeg
-  [ $BUILD_LEXLPEG ] || git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
+  # [ $BUILD_LEXLPEG ] || git submodule add "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   cd "$WXWIDGETS_BASENAME"
 
-  # checkout the version that was used in wxwidgets upgrade to 3.1.x
-  git checkout WX_3_1_0-7d9d59
+  # # checkout the version that was used in wxwidgets upgrade to 3.1.x
+  # git checkout WX_3_1_0-7d9d59
 
-  # refresh wxwidgets submodules
-  git submodule update --init --recursive
+  # # refresh wxwidgets submodules
+  # git submodule update --init --recursive
 
   MINSDK=""
   if [ -d $MACOSX_SDK_PATH ]; then
     MINSDK="--with-macosx-sdk=$MACOSX_SDK_PATH"
   fi
+  # ./configure
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
     --enable-compat28 \
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
     --with-zlib=builtin --disable-richtext \
     --enable-macosx_arch=$MACOSX_ARCH --with-macosx-version-min=$MACOSX_VERSION $MINSDK \
-    --with-osx_cocoa CFLAGS="-Os" CXXFLAGS="-Os"
+    --with-osx_cocoa CFLAGS="-Os -std=c++11 -stdlib=libc++" CXXFLAGS+="-Os -std=c++11 -stdlib=libc++" -std=libc++
 
   PATTERN="defined( __WXMAC__ )\$"
   if [ "$(grep -c "$PATTERN" src/aui/tabart.cpp)" -ne "1" ]; then
@@ -275,18 +313,18 @@ if [ $BUILD_WXWIDGETS ]; then
   fi
   sed -i "" "s/$PATTERN/0/" src/aui/tabart.cpp
 
-  make $MAKEFLAGS || { echo "Error: failed to build wxWidgets"; exit 1; }
+  make -j16 $MAKEFLAGS || { echo "Error: failed to build wxWidgets"; exit 1; }
   make install
   cd ..
-  rm -rf "$WXWIDGETS_BASENAME"
+  # rm -rf "$WXWIDGETS_BASENAME"
 fi
 
 # build wxLua
 if [ $BUILD_WXLUA ]; then
-  git clone "$WXLUA_URL" "$WXLUA_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
+  # git submodule add "$WXLUA_URL" "$WXLUA_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   cd "$WXLUA_BASENAME/wxLua"
 
-  # checkout the version that matches what was used in wxwidgets upgrade to 3.1.x
+  # # checkout the version that matches what was used in wxwidgets upgrade to 3.1.x
   git checkout WX_3_1_0-7d9d59
 
   MINSDK=""
@@ -314,13 +352,14 @@ if [ $BUILD_WXLUA ]; then
   install_name_tool -id libwx.dylib "$INSTALL_DIR/lib/libwx.dylib"
   [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/libwx.dylib"
   cd ../..
-  rm -rf "$WXLUA_BASENAME"
+  # rm -rf "$WXLUA_BASENAME"
 fi
 
 # build LuaSocket
 if [ $BUILD_LUASOCKET ]; then
-  curl -L "$LUASOCKET_URL" > "$LUASOCKET_FILENAME" || { echo "Error: failed to download LuaSocket"; exit 1; }
-  unzip "$LUASOCKET_FILENAME"
+  # curl -L "$LUASOCKET_URL" > "$LUASOCKET_FILENAME" || { echo "Error: failed to download LuaSocket"; exit 1; }
+  # unzip "$LUASOCKET_FILENAME"
+  # git submodule add "$LUASOCKET_URL" LUASOCKET_BASENAME || { echo "Error: failed to download LuaSocket"; exit 1; }
   cd "$LUASOCKET_BASENAME"
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"{mime,socket}
   gcc $BUILD_FLAGS -install_name core.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" src/mime.c \
@@ -335,28 +374,30 @@ if [ $BUILD_LUASOCKET ]; then
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib" ] || { echo "Error: socket/core.dylib isn't found"; exit 1; }
   [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib"
   cd ..
-  rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
+  # rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
 fi
 
 # build lfs
 if [ $BUILD_LFS ]; then
-  curl -L "$LFS_URL" > "$LFS_FILENAME" || { echo "Error: failed to download lfs"; exit 1; }
-  tar -xzf "$LFS_FILENAME"
-  mv "luafilesystem-$LFS_BASENAME" "$LFS_BASENAME"
-  cd "$LFS_BASENAME/src"
+  # curl -L "$LFS_URL" > "$LFS_FILENAME" || { echo "Error: failed to download lfs"; exit 1; }
+  # tar -xzf "$LFS_FILENAME"
+  # mv "luafilesystem-$LFS_BASENAME" "$LFS_BASENAME"
+  # git submodule add "$LFS_URL" "$LFS_BASENAME" || { echo "Error: failed to download lfs"; exit 1; }
+  cd "$LFS_BASENAME/src" && git checkout $LFS_VERSION -b $LFS_VERSION 
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
   gcc $BUILD_FLAGS -install_name lfs.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/lfs.dylib" lfs.c \
     || { echo "Error: failed to build lfs"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lfs.dylib" ] || { echo "Error: lfs.dylib isn't found"; exit 1; }
   [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/lfs.dylib"
   cd ../..
-  rm -rf "$LFS_FILENAME" "$LFS_BASENAME"
+  # rm -rf "$LFS_FILENAME" "$LFS_BASENAME"
 fi
 
 # build lpeg
 if [ $BUILD_LPEG ]; then
-  curl -L "$LPEG_URL" > "$LPEG_FILENAME" || { echo "Error: failed to download lpeg"; exit 1; }
-  tar -xzf "$LPEG_FILENAME"
+  # curl -L "$LPEG_URL" > "$LPEG_FILENAME" || { echo "Error: failed to download lpeg"; exit 1; }
+  # tar -xzf "$LPEG_FILENAME"
+  # git submodule add "$LPEG_URL" "$LPEG_BASENAME"
   cd "$LPEG_BASENAME"
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
   gcc $BUILD_FLAGS -install_name lpeg.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dylib" lptree.c lpvm.c lpcap.c lpcode.c lpprint.c \
@@ -364,15 +405,16 @@ if [ $BUILD_LPEG ]; then
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dylib" ] || { echo "Error: lpeg.dylib isn't found"; exit 1; }
   [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dylib"
   cd ..
-  rm -rf "$LPEG_FILENAME" "$LPEG_BASENAME"
+  # rm -rf "$LPEG_FILENAME" "$LPEG_BASENAME"
 fi
 
 # build LuaSec
 if [ $BUILD_LUASEC ]; then
-  curl -L "$LUASEC_URL" > "$LUASEC_FILENAME" || { echo "Error: failed to download LuaSec"; exit 1; }
-  unzip "$LUASEC_FILENAME"
-  # the folder in the archive is "luasec-luasec-....", so need to fix
-  mv "luasec-$LUASEC_BASENAME" $LUASEC_BASENAME
+  # curl -L "$LUASEC_URL" > "$LUASEC_FILENAME" || { echo "Error: failed to download LuaSec"; exit 1; }
+  # unzip "$LUASEC_FILENAME"
+  # # the folder in the archive is "luasec-luasec-....", so need to fix
+  # mv "luasec-$LUASEC_BASENAME" $LUASEC_BASENAME
+  # git submodule add "$LUASEC_URL" "$LUASEC_BASENAME" || { echo "Error: failed to download LuaSec"; exit 1; }
   cd "$LUASEC_BASENAME"
   gcc $BUILD_FLAGS -install_name ssl.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib" \
     src/luasocket/{timeout.c,buffer.c,io.c,usocket.c} src/{context.c,x509.c,ssl.c} -Isrc \
@@ -385,7 +427,7 @@ if [ $BUILD_LUASEC ]; then
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib" ] || { echo "Error: ssl.dylib isn't found"; exit 1; }
   [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib"
   cd ..
-  rm -rf "$LUASEC_FILENAME" "$LUASEC_BASENAME"
+  # rm -rf "$LUASEC_FILENAME" "$LUASEC_BASENAME"
 fi
 
 # now copy the compiled dependencies to ZBS binary directory
