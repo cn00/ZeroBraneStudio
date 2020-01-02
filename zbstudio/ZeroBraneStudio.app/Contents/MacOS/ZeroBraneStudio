@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 ZBS_PATH=${0%/*/*}
 if [ ! -d $ZBS_PATH ]; then ZBS_PATH=${PWD%/*}; fi
 cd "$ZBS_PATH/ZeroBraneStudio"

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 # exit if the command line is empty
 if [ $# -eq 0 ]; then
   echo "Usage: $0 LIBRARY..."
@@ -7,7 +9,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # binary directory
-BIN_DIR="$(dirname "$PWD")/bin"
+BIN_DIR="$(cd `dirname $0`; pwd)/../bin"
 
 # temporary installation directory for dependencies
 INSTALL_DIR="$PWD/deps"
@@ -39,7 +41,7 @@ LUASOCKET_BASENAME="luasocket-3.0-rc1"
 LUASOCKET_FILENAME="v3.0-rc1.zip"
 LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
 
-LUASEC_BASENAME="luasec-0.6"
+LUASEC_BASENAME="luasec-0.8.2"
 LUASEC_FILENAME="$LUASEC_BASENAME.zip"
 LUASEC_URL="https://github.com/brunoos/luasec/archive/$LUASEC_FILENAME"
 
@@ -280,9 +282,9 @@ if [ $BUILD_WXWIDGETS ]; then
     echo "Incorrect pattern for a fix in tabart.cpp."
     exit 1
   fi
-  REPLACEMENT='0\
- static'
-  sed -i "" "/$PATTERN/{N;s/$PATTERN\n static/$REPLACEMENT/;}" src/aui/tabart.cpp
+ #  REPLACEMENT='0\
+ # static'
+ #  sed -i "" "/$PATTERN/{N;s/$PATTERN\n static/$REPLACEMENT/;}" src/aui/tabart.cpp
 
   make $MAKEFLAGS || { echo "Error: failed to build wxWidgets"; exit 1; }
   make install
@@ -382,7 +384,7 @@ if [ $BUILD_LUASEC ]; then
   cd "$LUASEC_BASENAME"
   gcc $BUILD_FLAGS -install_name ssl.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib" \
     src/luasocket/{timeout.c,buffer.c,io.c,usocket.c} src/{context.c,x509.c,ssl.c} -Isrc \
-    -lssl -lcrypto \
+    -lssl -lcrypto "-L/usr/local/opt/openssl@1.1/lib" "-I/usr/local/opt/openssl@1.1/include" \
     || { echo "Error: failed to build LuaSec"; exit 1; }
   mkdir -p "$INSTALL_DIR/share/lua/$LUAV/"
   cp src/ssl.lua "$INSTALL_DIR/share/lua/$LUAV/"
