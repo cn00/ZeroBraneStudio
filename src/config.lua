@@ -27,6 +27,7 @@ return {
     nomousezoom = false,
     saveallonrun = false,
     showfncall = false,
+    showligatures = false,
     showtabicon = false,
     showtabtooltip = true,
     smartindent = true,

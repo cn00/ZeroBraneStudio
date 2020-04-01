@@ -361,7 +361,7 @@ function EditorCallTip(editor, pos, x, y)
     -- only shorten if shown on mouse-over. Use shortcut to get full info.
     local showtooltip = ide.frame.menuBar:FindItem(ID.SHOWTOOLTIP)
     local suffix = "...\n"
-        ..TR("Use '%s' to see full description."):format(showtooltip:GetItemLabel())
+        ..TR("Use '%s' to see full description."):format(showtooltip:GetItemLabelText())
     if x and y and #tip > limit then
       tip = tip:sub(1, limit-#suffix):gsub("%W*%w*$","")..suffix
     end
@@ -787,7 +787,7 @@ function CreateEditor(bare)
   editor:SetBackSpaceUnIndents(edcfg.backspaceunindent and 1 or 0)
 
   if ide.wxver >= "3.0" and edcfg.showligatures then
-    editor:SetTechnology(1) -- enable DirectWrite support on Windows
+    editor:SetTechnology(wxstc.wxSTC_TECHNOLOGY_DIRECTWRITE) -- Windows only
   end
 
   if ide.wxver >= "2.9.5" then

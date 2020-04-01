@@ -220,8 +220,10 @@ function ide:GetContentScaleFactor()
 end
 function ide:GetMainFrame()
   if not self.frame then
+    local screen = wx.wxDisplay():GetClientArea()
     self.frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, self:GetProperty("editor"),
-      wx.wxDefaultPosition, wx.wxSize(1100, 700))
+      wx.wxDefaultPosition,
+      wx.wxSize(math.floor(screen:GetWidth()*0.8), math.floor(screen:GetHeight()*0.8)))
       -- transparency range: 0 == invisible -> 255 == opaque
       -- set lower bound of 50 to prevent accidental invisibility
       local transparency = tonumber(self:GetConfig().transparency)
@@ -274,7 +276,26 @@ function ide:GetKnownExtensions(ext)
   return knownexts
 end
 
-function ide:DoWhenIdle(func) table.insert(self.onidle, func) end
+function ide:DoWhenIdle(func, group)
+  -- check if there are any group leftovers and remove them
+  if #self.onidle == 0 and next(self.onidle) then
+    self.onidle = {}
+  end
+  if group then
+    -- if there is already an element for the same group
+    if self.onidle[group] then
+      -- find and remove it, as it's not needed anymore
+      for i = 1, #self.onidle do
+        if self.onidle[i] == self.onidle[group] then
+          table.remove(self.onidle, i)
+          break
+        end
+      end
+    end
+    self.onidle[group] = func
+  end
+  table.insert(self.onidle, func)
+end
 
 function ide:FindTopMenu(item)
   local index = self:GetMenuBar():FindMenu((TR)(item))
@@ -789,7 +810,7 @@ function ide:CreateStyledTextCtrl(...)
     local orig = editor[method]
     editor[method] = function (editor, ...)
       local tech = editor:GetTechnology()
-      if tech ~= 0 then editor:SetTechnology(0) end
+      if tech ~= 0 then editor:SetTechnology(wxstc.wxSTC_TECHNOLOGY_DEFAULT) end
       orig(editor, ...)
       if tech ~= 0 then editor:SetTechnology(tech) end
     end
@@ -1522,7 +1543,7 @@ function ide:SetHotKey(id, ksc)
         keymap[gid] = ""
         -- try to find a menu item with this ID (if any) to remove the hotkey
         local item = self:FindMenuItem(gid)
-        if item then item:SetItemLabel(item:GetItemLabel():gsub("\t.+","").."") end
+        if item then item:SetItemLabel(item:GetItemLabelText()) end
       end
       -- continue with the loop as there may be multiple associations with the same hotkey
     end
@@ -1546,8 +1567,8 @@ function ide:SetHotKey(id, ksc)
 
   local item = self:FindMenuItem(id)
   if item then
-    -- get the item text and replace the shortcut; make sure to the accelerator (if any)
-    item:SetItemLabel(item:GetItemLabel():gsub("\t.+","")..KSC(nil, ksc))
+    -- get the item text and replace the shortcut; make sure to add the accelerator (if any)
+    item:SetItemLabel(item:GetItemLabelText()..KSC(nil, ksc))
   end
 
   -- if there is no keymap or menu item, then use the accelerator
