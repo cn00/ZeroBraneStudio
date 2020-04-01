@@ -55,7 +55,7 @@ end
 
 function GetPathWithSep(wxfn)
   if type(wxfn) == 'string' then wxfn = wx.wxFileName(wxfn) end
-  return wxfn:GetPath(bit.bor(wx.wxPATH_GET_VOLUME, wx.wxPATH_GET_SEPARATOR))
+  return wxfn:GetPath((wx.wxPATH_GET_VOLUME | wx.wxPATH_GET_SEPARATOR))
 end
 
 local function closeDir(dir)

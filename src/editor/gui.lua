@@ -100,6 +100,8 @@ local function menuDropDownPosition(event)
 end
 
 local function createToolBar(frame)
+
+  print("----------------- createToolBar -------------", frame)
   local toolBar = wxaui.wxAuiToolBar(frame, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_TB_PLAIN_BACKGROUND)
 
@@ -120,7 +122,7 @@ local function createToolBar(frame)
           end
           local icon, description = unpack(iconmap)
           local isbitmap = type(icon) == "userdata" and icon:GetClassInfo():GetClassName() == "wxBitmap"
-          local bitmap = isbitmap and icon or ide:GetBitmap(icon, "TOOLBAR", toolBmpSize)
+          local bitmap = isbitmap and icon or ide:GetBitmap(icon, wx.wxART_TOOLBAR, toolBmpSize)
           toolBar:AddTool(id, "", bitmap, (TR)(description)..SCinB(id))
         end
       end

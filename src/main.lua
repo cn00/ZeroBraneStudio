@@ -37,26 +37,45 @@ if islinux then
   end
 end
 
-local luaver = (_VERSION and _VERSION:match("Lua (%d%.%d)") or ""):gsub("%.",""):gsub("51","")
+local luaver = "" -- (_VERSION and _VERSION:match("Lua (%d%.%d)") or ""):gsub("%.",""):gsub("51","")
 package.cpath = (
   iswindows and ('bin/clibs%s/?.dll;'):format(luaver) or
   islinux and ('bin/linux/%s/clibs%s/lib?.so;bin/linux/%s/clibs%s/?.so;'):format(arch,luaver,arch,luaver) or
-  --[[isosx]] ('bin/clibs%s/lib?.dylib;bin/clibs%s/?.dylib;'):format(luaver,luaver))
+  --[[isosx]] ('bin/clibs%s/lib?.dylib;bin/clibs%s/?.dylib;'
+  ..'../../lib/Debug/Debug/lib?.dylib;'
+  ..'../../lfs/Debug/lib?.dylib;'
+  ..'../../lpeg/Debug/lib?.dylib;'
+  ..'../../p7zip/Debug/lib?.dylib;'
+  ..'../../luasocket/Debug/liblua?.dylib;'
+  ..'../../scintillua/Debug/lib?.dylib;'
+  ):format(luaver,luaver))
     .. package.cpath
-package.path  = 'lualibs/?.lua;lualibs/?/?.lua;lualibs/?/init.lua;' .. package.path
+package.path  = '../../../?.lua;../../../lualibs/?.lua;../../../lualibs/?/?.lua;../../../lualibs/?/init.lua;'
+..'lualibs/?.lua;lualibs/?/?.lua;lualibs/?/init.lua;' .. package.path
+
 
 require("wx")
-if not bit then require("bit") end
+
+local zip = require("p7zip")
+for k,v in pairs(p7zip)do
+  print("p7zip", k,v)
+end
+
+dofile("/Volumes/Data/zbs/bin.debug/samples/auidemo.wx.lua")
+
+--[[
+-- if not bit then require("bit") end
+
 require("mobdebug")
 if jit and jit.on then jit.on() end -- turn jit "on" as "mobdebug" may turn it off for LuaJIT
 
-dofile "src/util.lua"
+require "src/util"
 
 -----------
 -- IDE
 --
 local pendingOutput = {}
-local config = dofile("src/config.lua")
+local config = require("src/config")
 config.path = {
   projectdir = "",
   app = nil,
@@ -274,10 +293,10 @@ function ide:LoadAPI(path)
   ReloadAPIs("*")
 end
 
-dofile "src/version.lua"
+require "src/version"
 
 for _, file in ipairs({"proto", "ids", "style", "keymap", "toolbar", "package"}) do
-  dofile("src/editor/"..file..".lua")
+  require("src/editor/"..file)
 end
 
 ide.config.styles = StylesGetDefault()
@@ -397,7 +416,7 @@ end
 ----------------------
 -- process application
 
-ide.app = dofile(ide.appname.."/app.lua")
+ide.app = require(ide.appname.."/app")
 local app = assert(ide.app)
 
 -- load packages
@@ -594,7 +613,7 @@ for _, file in ipairs({
     "editor", "findreplace", "commands", "autocomplete", "shellbox", "markers",
     "menu_file", "menu_edit", "menu_search", "menu_view", "menu_project", "menu_help",
     "print", "inspect" }) do
-  dofile("src/editor/"..file..".lua")
+  require("src/editor/"..file)
 end
 
 -- delay loading tools until everything is loaded as it modifies the menus
@@ -885,3 +904,4 @@ wx.wxGetApp():MainLoop()
 
 -- protect from occasional crash on macOS and Linux from `wxluaO_deletegcobject`
 os.exit()
+]]
